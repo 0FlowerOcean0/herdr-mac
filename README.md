@@ -16,10 +16,10 @@ Herdr Native Clients 是一组非官方、开源的 [Herdr](https://herdr.dev/) 
 
 ## 下载
 
-| 平台 | 版本 | 系统要求 | 安装包 |
-| --- | --- | --- | --- |
-| macOS | `v0.1.0` | macOS 14+、Apple Silicon | [下载 ZIP](https://github.com/0FlowerOcean0/herdr-mac/releases/download/v0.1.0/Herdr-for-Mac-0.1.0-arm64.zip) |
-| Windows Preview | `0.1.0-preview.1` | Windows 10 19041+ / Windows 11、x64 | [下载 ZIP](https://github.com/0FlowerOcean0/herdr-mac/releases/download/windows-v0.1.0-preview.1/Herdr-for-Windows-0.1.0-preview.1-x64.zip) |
+| 平台 | 版本 | 系统要求 | 推荐安装 | 便携包 |
+| --- | --- | --- | --- | --- |
+| macOS | `v0.1.0` | macOS 14+、Apple Silicon | [下载 DMG](https://github.com/0FlowerOcean0/herdr-mac/releases/download/v0.1.0/Herdr-for-Mac-0.1.0-arm64.dmg) | [下载 ZIP](https://github.com/0FlowerOcean0/herdr-mac/releases/download/v0.1.0/Herdr-for-Mac-0.1.0-arm64.zip) |
+| Windows Preview | `0.1.0-preview.1` | Windows 10 19041+ / Windows 11、x64 | [下载 Setup.exe](https://github.com/0FlowerOcean0/herdr-mac/releases/download/windows-v0.1.0-preview.1/Herdr-for-Windows-0.1.0-preview.1-x64-Setup.exe) | [下载 ZIP](https://github.com/0FlowerOcean0/herdr-mac/releases/download/windows-v0.1.0-preview.1/Herdr-for-Windows-0.1.0-preview.1-x64.zip) |
 
 [查看全部 Releases](https://github.com/0FlowerOcean0/herdr-mac/releases)
 
@@ -73,10 +73,12 @@ Herdr Native Clients 是一组非官方、开源的 [Herdr](https://herdr.dev/) 
    herdr --version
    ```
 
-3. 下载并解压 [Herdr-for-Mac-0.1.0-arm64.zip](https://github.com/0FlowerOcean0/herdr-mac/releases/download/v0.1.0/Herdr-for-Mac-0.1.0-arm64.zip)。
-4. 将 `Herdr.app` 拖入“应用程序”后启动。
+3. 下载并打开 [Herdr-for-Mac-0.1.0-arm64.dmg](https://github.com/0FlowerOcean0/herdr-mac/releases/download/v0.1.0/Herdr-for-Mac-0.1.0-arm64.dmg)。
+4. 将 `Herdr.app` 拖到 DMG 中的 `Applications`，再从“应用程序”启动。
 
 当前 macOS Release 使用 ad-hoc 签名，尚未进行 Apple Developer ID 签名与公证。首次打开时，请在 Finder 中按住 Control 点击应用并选择“打开”，或前往“系统设置 → 隐私与安全性”确认打开。
+
+[下载 DMG SHA-256](https://github.com/0FlowerOcean0/herdr-mac/releases/download/v0.1.0/Herdr-for-Mac-0.1.0-arm64.dmg.sha256)
 
 ### Windows Preview
 
@@ -86,18 +88,16 @@ Herdr Native Clients 是一组非官方、开源的 [Herdr](https://herdr.dev/) 
    powershell -ExecutionPolicy Bypass -c "irm https://herdr.dev/install.ps1 | iex"
    ```
 
-2. 下载并完整解压 [Herdr-for-Windows-0.1.0-preview.1-x64.zip](https://github.com/0FlowerOcean0/herdr-mac/releases/download/windows-v0.1.0-preview.1/Herdr-for-Windows-0.1.0-preview.1-x64.zip)。
-3. 运行 `Herdr.Windows.exe`。
+2. 下载并运行 [Herdr-for-Windows-0.1.0-preview.1-x64-Setup.exe](https://github.com/0FlowerOcean0/herdr-mac/releases/download/windows-v0.1.0-preview.1/Herdr-for-Windows-0.1.0-preview.1-x64-Setup.exe)。
+3. 按安装向导完成安装，然后从开始菜单启动 `Herdr`。
 
-Windows ZIP 已包含 .NET 和 Windows App SDK 运行文件，但系统仍需 Microsoft Edge WebView2 Runtime。不要只从 ZIP 中复制单个 EXE。
+安装器会将客户端安装到当前用户的 `%LOCALAPPDATA%\Programs\Herdr Native Client`，并在 Windows“已安装的应用”中提供卸载入口。安装包已包含 .NET 和 Windows App SDK 运行文件，但系统仍需 Microsoft Edge WebView2 Runtime。
 
-发布包校验值：
+当前 Setup.exe 尚未使用商业代码签名证书，Windows SmartScreen 可能显示“未知发布者”。请只从本仓库 Release 下载，并先使用对应 SHA-256 文件校验；确认后可选择“更多信息 → 仍要运行”。
 
-```text
-SHA-256  ee549680096e2c615c40c2df4051e22ba34a1195d10d76b2d63b5b6da7d5c9de
-```
+[下载 Setup.exe SHA-256](https://github.com/0FlowerOcean0/herdr-mac/releases/download/windows-v0.1.0-preview.1/Herdr-for-Windows-0.1.0-preview.1-x64-Setup.exe.sha256)
 
-[下载 SHA-256 校验文件](https://github.com/0FlowerOcean0/herdr-mac/releases/download/windows-v0.1.0-preview.1/Herdr-for-Windows-0.1.0-preview.1-x64.zip.sha256)
+需要免安装版本时，可下载完整 ZIP；不要只复制其中一个 EXE。
 
 ## 使用与配置
 
@@ -165,6 +165,7 @@ swift run HerdrMac
 
 ```bash
 ./scripts/package-release.sh
+./scripts/package-dmg.sh
 ```
 
 ### Windows
@@ -177,7 +178,7 @@ cd herdr-mac
 .\windows\package-windows.ps1
 ```
 
-脚本会构建离线终端资源、运行 ConPTY 双向交互 smoke、执行单元测试，并生成 self-contained x64 ZIP 和 SHA-256 文件。
+脚本会构建离线终端资源、运行 ConPTY 双向交互 smoke、执行单元测试，并生成 self-contained x64 ZIP、Setup.exe 和对应 SHA-256 文件。
 
 ## 项目结构
 
@@ -198,6 +199,7 @@ Windows `0.1.0-preview.1` 已完成：
 - ConPTY 双向输入与输出 smoke
 - 单元测试 `10/10`
 - WinUI 3 x64 self-contained 发布
+- Inno Setup 安装器编译
 - GitHub Release 附件重新下载与 SHA-256 校验
 
 自动化结果可以证明构建、终端传输和发布包完整性，但不等同于 Windows 实机视觉验收。

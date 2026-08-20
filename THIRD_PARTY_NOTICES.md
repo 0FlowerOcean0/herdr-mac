@@ -18,6 +18,10 @@ The Windows client uses the [Windows App SDK](https://github.com/microsoft/Windo
 
 The Windows client includes [xterm.js](https://github.com/xtermjs/xterm.js) and its fit addon, Copyright © 2017–2024 The xterm.js authors, under the MIT License.
 
+## Inno Setup
+
+The Windows installer is built with [Inno Setup](https://jrsoftware.org/isinfo.php) and includes its installer runtime under the [Inno Setup License](https://jrsoftware.org/files/is/license.txt).
+
 ## Independence
 
 This project is not affiliated with, maintained by, or endorsed by the Herdr project or its maintainers.
