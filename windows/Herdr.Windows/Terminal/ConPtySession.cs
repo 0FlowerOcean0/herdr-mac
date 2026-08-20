@@ -247,16 +247,7 @@ public sealed class ConPtySession : IAsyncDisposable
         var processState = NativeMethods.GetExitCodeProcess(_process, out var exitCode)
             ? exitCode.ToString()
             : $"error:{Marshal.GetLastWin32Error()}";
-        var pipeState = NativeMethods.PeekNamedPipe(
-            _output.DangerousGetHandle(),
-            IntPtr.Zero,
-            0,
-            IntPtr.Zero,
-            out var availableBytes,
-            IntPtr.Zero)
-            ? availableBytes.ToString()
-            : $"error:{Marshal.GetLastWin32Error()}";
-        return $"processExit={processState}; availableBytes={pipeState}; readerStarted={_readerStarted}; readerError={_readerError ?? "none"}";
+        return $"processExit={processState}; readerStarted={_readerStarted}; readerError={_readerError ?? "none"}";
     }
 
     private void ReadOutput()
@@ -440,16 +431,6 @@ public sealed class ConPtySession : IAsyncDisposable
         [DllImport("kernel32.dll", SetLastError = true)]
         [return: MarshalAs(UnmanagedType.Bool)]
         internal static extern bool TerminateProcess(SafeFileHandle process, uint exitCode);
-
-        [DllImport("kernel32.dll", SetLastError = true)]
-        [return: MarshalAs(UnmanagedType.Bool)]
-        internal static extern bool PeekNamedPipe(
-            IntPtr pipe,
-            IntPtr buffer,
-            uint bufferSize,
-            IntPtr bytesRead,
-            out uint totalBytesAvailable,
-            IntPtr bytesLeftThisMessage);
 
         [DllImport("kernel32.dll", SetLastError = true)]
         [return: MarshalAs(UnmanagedType.Bool)]
