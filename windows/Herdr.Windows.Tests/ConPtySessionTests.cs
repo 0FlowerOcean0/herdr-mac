@@ -27,7 +27,7 @@ public sealed class ConPtySessionTests
             output.Append(value);
             if (output.ToString().Contains("HERDR_CONPTY_OK", StringComparison.Ordinal)) completed.TrySetResult();
         };
-        await session.WriteAsync("echo HERDR_CONPTY_OK\r\nexit\r\n");
+        await session.WriteAsync("echo HERDR_CONPTY_OK\r");
 
         try
         {
@@ -41,5 +41,6 @@ public sealed class ConPtySessionTests
         }
 
         Assert.Contains("HERDR_CONPTY_OK", output.ToString());
+        await session.WriteAsync("exit\r");
     }
 }
