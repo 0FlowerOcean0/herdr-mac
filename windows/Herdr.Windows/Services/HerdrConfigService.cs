@@ -124,7 +124,7 @@ public sealed class HerdrConfigService
         for (var index = headerIndex + 1; index < lines.Count; index++)
         {
             var value = lines[index].Trim();
-            if (value.StartsWith('[', StringComparison.Ordinal) && value.EndsWith(']', StringComparison.Ordinal))
+            if (value.StartsWith("[", StringComparison.Ordinal) && value.EndsWith("]", StringComparison.Ordinal))
             {
                 end = index;
                 break;
