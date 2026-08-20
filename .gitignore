@@ -3,3 +3,7 @@
 dist/
 release/
 Resources/AppIcon.iconset/
+node_modules/
+bin/
+obj/
+artifacts/

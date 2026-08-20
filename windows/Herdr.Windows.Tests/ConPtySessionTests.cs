@@ -1,0 +1,35 @@
+using System.Text;
+using Herdr.Windows.Terminal;
+
+namespace Herdr.Windows.Tests;
+
+public sealed class ConPtySessionTests
+{
+    [Theory]
+    [InlineData("plain", "plain")]
+    [InlineData("two words", "\"two words\"")]
+    [InlineData("", "\"\"")]
+    [InlineData("say \"hi\"", "\"say \\\"hi\\\"\"")]
+    public void QuotesWindowsCommandLineArguments(string value, string expected)
+    {
+        Assert.Equal(expected, ConPtySession.QuoteArgument(value));
+    }
+
+    [Fact]
+    public async Task CapturesOutputFromARealPseudoConsole()
+    {
+        var command = Environment.GetEnvironmentVariable("COMSPEC") ?? @"C:\Windows\System32\cmd.exe";
+        var output = new StringBuilder();
+        var completed = new TaskCompletionSource(TaskCreationOptions.RunContinuationsAsynchronously);
+        await using var session = ConPtySession.Start(command, ["/d", "/c", "echo", "HERDR_CONPTY_OK"]);
+        session.OutputReceived += value =>
+        {
+            output.Append(value);
+            if (output.ToString().Contains("HERDR_CONPTY_OK", StringComparison.Ordinal)) completed.TrySetResult();
+        };
+
+        await completed.Task.WaitAsync(TimeSpan.FromSeconds(10));
+
+        Assert.Contains("HERDR_CONPTY_OK", output.ToString());
+    }
+}
