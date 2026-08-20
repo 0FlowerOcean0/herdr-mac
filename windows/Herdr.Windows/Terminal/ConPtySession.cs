@@ -10,8 +10,8 @@ public sealed class ConPtySession : IAsyncDisposable
     private const uint ExtendedStartupInfoPresent = 0x00080000;
     private static readonly IntPtr ProcThreadAttributePseudoConsole = new(0x00020016);
 
-    private readonly FileStream _input;
-    private readonly FileStream _output;
+    private readonly SafeFileHandle _input;
+    private readonly SafeFileHandle _output;
     private readonly SafeFileHandle _process;
     private readonly SemaphoreSlim _inputLock = new(1, 1);
     private readonly object _eventLock = new();
@@ -66,10 +66,8 @@ public sealed class ConPtySession : IAsyncDisposable
     {
         _pseudoConsole = pseudoConsole;
         _process = process;
-        // CreatePipe returns synchronous handles. FileStream still provides Task-based
-        // reads/writes for them, but the handles must not be marked as overlapped I/O.
-        _input = new FileStream(input, FileAccess.Write, 4096, false);
-        _output = new FileStream(output, FileAccess.Read, 4096, false);
+        _input = input;
+        _output = output;
         _readerTask = Task.Factory.StartNew(
             ReadOutput,
             CancellationToken.None,
@@ -189,12 +187,18 @@ public sealed class ConPtySession : IAsyncDisposable
     {
         ObjectDisposedException.ThrowIf(_disposed, this);
         if (string.IsNullOrEmpty(data)) return;
-        var bytes = Encoding.UTF8.GetBytes(data);
         await _inputLock.WaitAsync(cancellationToken);
         try
         {
-            await _input.WriteAsync(bytes, cancellationToken);
-            await _input.FlushAsync(cancellationToken);
+            var bytes = Encoding.UTF8.GetBytes(data);
+            await Task.Run(() =>
+            {
+                if (!NativeMethods.WriteFile(_input.DangerousGetHandle(), bytes, (uint)bytes.Length, out var written, IntPtr.Zero))
+                {
+                    throw new Win32Exception(Marshal.GetLastWin32Error(), "Could not write terminal input to ConPTY.");
+                }
+                if (written != (uint)bytes.Length) throw new IOException("ConPTY accepted only part of the terminal input.");
+            }, cancellationToken);
         }
         finally
         {
@@ -244,7 +248,7 @@ public sealed class ConPtySession : IAsyncDisposable
             ? exitCode.ToString()
             : $"error:{Marshal.GetLastWin32Error()}";
         var pipeState = NativeMethods.PeekNamedPipe(
-            _output.SafeFileHandle,
+            _output.DangerousGetHandle(),
             IntPtr.Zero,
             0,
             IntPtr.Zero,
@@ -265,16 +269,20 @@ public sealed class ConPtySession : IAsyncDisposable
         {
             while (true)
             {
-                var count = _output.Read(bytes, 0, bytes.Length);
+                if (!NativeMethods.ReadFile(_output.DangerousGetHandle(), bytes, (uint)bytes.Length, out var count, IntPtr.Zero))
+                {
+                    var error = Marshal.GetLastWin32Error();
+                    if (error == 109 || error == 232 || _disposed) break;
+                    throw new Win32Exception(error, "Could not read ConPTY output.");
+                }
                 if (count == 0) break;
-                var characterCount = decoder.GetChars(bytes, 0, count, characters, 0, false);
+                var characterCount = decoder.GetChars(bytes, 0, (int)count, characters, 0, false);
                 if (characterCount > 0) PublishOutput(new string(characters, 0, characterCount));
             }
         }
-        catch (IOException)
+        catch (Win32Exception exception)
         {
-            // Closing a pseudoconsole ends its pipe with ERROR_BROKEN_PIPE.
-            _readerError = "broken-pipe";
+            _readerError = $"win32:{exception.NativeErrorCode}:{exception.Message}";
         }
         catch (ObjectDisposedException exception)
         {
@@ -436,12 +444,30 @@ public sealed class ConPtySession : IAsyncDisposable
         [DllImport("kernel32.dll", SetLastError = true)]
         [return: MarshalAs(UnmanagedType.Bool)]
         internal static extern bool PeekNamedPipe(
-            SafeFileHandle pipe,
+            IntPtr pipe,
             IntPtr buffer,
             uint bufferSize,
             IntPtr bytesRead,
             out uint totalBytesAvailable,
             IntPtr bytesLeftThisMessage);
+
+        [DllImport("kernel32.dll", SetLastError = true)]
+        [return: MarshalAs(UnmanagedType.Bool)]
+        internal static extern bool ReadFile(
+            IntPtr file,
+            [Out] byte[] buffer,
+            uint bytesToRead,
+            out uint bytesRead,
+            IntPtr overlapped);
+
+        [DllImport("kernel32.dll", SetLastError = true)]
+        [return: MarshalAs(UnmanagedType.Bool)]
+        internal static extern bool WriteFile(
+            IntPtr file,
+            byte[] buffer,
+            uint bytesToWrite,
+            out uint bytesWritten,
+            IntPtr overlapped);
 
         [DllImport("kernel32.dll")]
         internal static extern int CreatePseudoConsole(Coord size, IntPtr input, IntPtr output, uint flags, out IntPtr pseudoConsole);
