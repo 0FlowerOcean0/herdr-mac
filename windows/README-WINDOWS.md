@@ -2,6 +2,17 @@
 
 这是一个非官方、开源的 Herdr Windows 原生客户端。窗口外壳使用 WinUI 3，终端输入输出通过 Windows ConPTY 连接真正的 `herdr.exe`；终端画面由随应用离线分发的 xterm.js 渲染，不会访问网页终端服务。
 
+## 下载
+
+当前公开版本：[`0.1.0-preview.1`](https://github.com/0FlowerOcean0/herdr-mac/releases/tag/windows-v0.1.0-preview.1)
+
+- [下载 Windows x64 ZIP](https://github.com/0FlowerOcean0/herdr-mac/releases/download/windows-v0.1.0-preview.1/Herdr-for-Windows-0.1.0-preview.1-x64.zip)
+- [下载 SHA-256 校验文件](https://github.com/0FlowerOcean0/herdr-mac/releases/download/windows-v0.1.0-preview.1/Herdr-for-Windows-0.1.0-preview.1-x64.zip.sha256)
+
+```text
+ee549680096e2c615c40c2df4051e22ba34a1195d10d76b2d63b5b6da7d5c9de  Herdr-for-Windows-0.1.0-preview.1-x64.zip
+```
+
 ## 要求
 
 - Windows 10 19041+ 或 Windows 11
@@ -29,3 +40,12 @@ powershell -ExecutionPolicy Bypass -c "irm https://herdr.dev/install.ps1 | iex"
 本客户端保留官方 Windows Preview 当前支持的本地持久会话、PowerShell / cmd、spaces、panes、agents、plugins（preview）和 history。官方尚未支持的 Direct terminal attach、`herdr --remote`、live handoff 与 Unix fd handoff 不会出现在 Windows 客户端中。
 
 Herdr 在 Windows 上自带的 app-local ConPTY 文件必须与官方 `herdr.exe` 保持在原安装目录中；本项目不会重新打包 Herdr 本体。
+
+## 当前验证
+
+- Windows runner 编译和 self-contained x64 发布通过
+- 独立 ConPTY 输入/输出 smoke 通过
+- 单元测试 `10/10` 通过
+- Release ZIP 重新下载并通过 SHA-256 校验
+
+目前尚未完成 Windows 实机可视验收，因此这里不使用模拟截图代替真实运行截图。

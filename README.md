@@ -4,15 +4,25 @@
 ![Windows 10+](https://img.shields.io/badge/Windows-10%2B-0078D4?logo=windows11&logoColor=white)
 ![Swift 5.10](https://img.shields.io/badge/Swift-5.10-F05138?logo=swift&logoColor=white)
 ![WinUI 3](https://img.shields.io/badge/WinUI-3-7C3AED)
+[![Windows Preview](https://github.com/0FlowerOcean0/herdr-mac/actions/workflows/windows.yml/badge.svg)](https://github.com/0FlowerOcean0/herdr-mac/actions/workflows/windows.yml)
 ![Apache-2.0](https://img.shields.io/badge/license-Apache--2.0-2563EB)
 
 一组非官方、开源的 Herdr 原生桌面客户端。macOS 版使用 SwiftUI、AppKit、SwiftTerm 与真实 PTY；Windows Preview 使用 WinUI 3、ConPTY 与随应用离线分发的 xterm.js。两者都直接运行真正的 Herdr TUI，不是日志预览器，也没有重新实现一套会与 Herdr 冲突的 spaces / panes / agents 界面。
 
 > Unofficial native desktop clients for [Herdr](https://herdr.dev/). Herdr itself remains the terminal workspace manager; this project supplies native macOS and Windows windowing, settings, and terminal transport around it.
 
+## 下载
+
+| 平台 | 当前版本 | 系统要求 | 下载 |
+| --- | --- | --- | --- |
+| macOS | `v0.1.0` | macOS 14+、Apple Silicon | [Herdr-for-Mac-0.1.0-arm64.zip](https://github.com/0FlowerOcean0/herdr-mac/releases/download/v0.1.0/Herdr-for-Mac-0.1.0-arm64.zip) |
+| Windows | `0.1.0-preview.1` | Windows 10 19041+ / Windows 11、x64 | [Herdr-for-Windows-0.1.0-preview.1-x64.zip](https://github.com/0FlowerOcean0/herdr-mac/releases/download/windows-v0.1.0-preview.1/Herdr-for-Windows-0.1.0-preview.1-x64.zip) |
+
+两个客户端都要求先安装 Herdr 本体。本项目不会重新打包 `herdr` / `herdr.exe`，也不会保存模型、Agent 或 SSH 凭据。全部版本见 [GitHub Releases](https://github.com/0FlowerOcean0/herdr-mac/releases)。
+
 ![Herdr for Mac 主界面](assets/screenshots/herdr-main.png)
 
-> 当前截图来自已完成可视验收的 macOS 版；Windows Preview 已通过 Windows runner 的编译、ConPTY 双向交互与打包验证，Windows 实机界面截图将在可视验收后补入。
+> 当前截图来自已完成可视验收的 macOS 版。Windows Preview 已通过 Windows runner 的编译、ConPTY 双向交互和发布包验证；实机界面截图将在完成 Windows 可视验收后补入。
 
 ## 设计原则
 
@@ -60,7 +70,7 @@ herdr --version
 
 ### 2. 安装 Mac 客户端
 
-从 [GitHub Releases](https://github.com/0FlowerOcean0/herdr-mac/releases/latest) 下载 `Herdr-for-Mac-0.1.0-arm64.zip`，解压后将 `Herdr.app` 拖入“应用程序”。
+下载 [Herdr-for-Mac-0.1.0-arm64.zip](https://github.com/0FlowerOcean0/herdr-mac/releases/download/v0.1.0/Herdr-for-Mac-0.1.0-arm64.zip)，解压后将 `Herdr.app` 拖入“应用程序”。
 
 当前 Release 使用 ad-hoc 签名，尚未进行 Apple Developer ID 签名与公证。第一次打开时请在 Finder 中按住 Control 点击应用并选择“打开”，或前往“系统设置 → 隐私与安全性”确认打开。
 
@@ -74,7 +84,13 @@ herdr --version
 powershell -ExecutionPolicy Bypass -c "irm https://herdr.dev/install.ps1 | iex"
 ```
 
-再从 [GitHub Releases](https://github.com/0FlowerOcean0/herdr-mac/releases) 下载 `Herdr-for-Windows-0.1.0-preview.1-x64.zip`，完整解压后运行 `Herdr.Windows.exe`。Windows ZIP 自带 .NET 与 Windows App SDK 运行文件；系统仍需 Microsoft Edge WebView2 Runtime。
+再下载 [Herdr-for-Windows-0.1.0-preview.1-x64.zip](https://github.com/0FlowerOcean0/herdr-mac/releases/download/windows-v0.1.0-preview.1/Herdr-for-Windows-0.1.0-preview.1-x64.zip)，完整解压后运行 `Herdr.Windows.exe`。Windows ZIP 自带 .NET 与 Windows App SDK 运行文件；系统仍需 Microsoft Edge WebView2 Runtime。
+
+Windows 发布包 SHA-256：
+
+```text
+ee549680096e2c615c40c2df4051e22ba34a1195d10d76b2d63b5b6da7d5c9de
+```
 
 ## 从源码构建
 
@@ -108,6 +124,16 @@ Windows 需要 Windows 10/11、.NET 8 SDK、Node.js 22：
 ```
 
 脚本会构建离线终端资源、运行独立 ConPTY 输入/输出 smoke、执行单元测试、发布 self-contained WinUI 3 应用并生成 ZIP 与 SHA-256。
+
+## 验证状态
+
+- Windows `0.1.0-preview.1`：Windows runner 构建通过
+- 独立 ConPTY 双向输入/输出 smoke 通过
+- Windows 单元测试 `10/10` 通过
+- WinUI 3 x64 self-contained 发布通过
+- GitHub Release 附件重新下载并通过 SHA-256 校验
+
+这些结果证明源码可以在 Windows runner 上编译、终端传输可以往返、发布包结构与校验值正确；它们不等同于 Windows 实机视觉验收。
 
 ## Herdr 查找顺序
 
