@@ -12,6 +12,7 @@ public sealed class ConPtySession : IAsyncDisposable
 
     private readonly FileStream _input;
     private readonly FileStream _output;
+    private readonly SafeFileHandle _process;
     private readonly SemaphoreSlim _inputLock = new(1, 1);
     private readonly object _eventLock = new();
     private readonly StringBuilder _pendingOutput = new();
@@ -21,6 +22,8 @@ public sealed class ConPtySession : IAsyncDisposable
     private bool _hasExited;
     private Action<string>? _outputReceived;
     private Action? _exited;
+    private volatile bool _readerStarted;
+    private string? _readerError;
 
     public event Action<string>? OutputReceived
     {
@@ -59,9 +62,10 @@ public sealed class ConPtySession : IAsyncDisposable
         }
     }
 
-    private ConPtySession(IntPtr pseudoConsole, SafeFileHandle input, SafeFileHandle output)
+    private ConPtySession(IntPtr pseudoConsole, SafeFileHandle input, SafeFileHandle output, SafeFileHandle process)
     {
         _pseudoConsole = pseudoConsole;
+        _process = process;
         // CreatePipe returns synchronous handles. FileStream still provides Task-based
         // reads/writes for them, but the handles must not be marked as overlapped I/O.
         _input = new FileStream(input, FileAccess.Write, 4096, false);
@@ -154,13 +158,13 @@ public sealed class ConPtySession : IAsyncDisposable
             }
 
             NativeMethods.CloseHandle(processInfo.Thread);
-            NativeMethods.CloseHandle(processInfo.Process);
+            var processHandle = new SafeFileHandle(processInfo.Process, true);
 
             var inputHandle = new SafeFileHandle(hostInputWrite, true);
             hostInputWrite = IntPtr.Zero;
             var outputHandle = new SafeFileHandle(hostOutputRead, true);
             hostOutputRead = IntPtr.Zero;
-            return new ConPtySession(pseudoConsole, inputHandle, outputHandle);
+            return new ConPtySession(pseudoConsole, inputHandle, outputHandle, processHandle);
         }
         catch
         {
@@ -229,11 +233,30 @@ public sealed class ConPtySession : IAsyncDisposable
             // Expected when reconnecting or closing the window.
         }
         _output.Dispose();
+        _process.Dispose();
         _inputLock.Dispose();
+    }
+
+    internal string GetDebugState()
+    {
+        var processState = NativeMethods.GetExitCodeProcess(_process, out var exitCode)
+            ? exitCode.ToString()
+            : $"error:{Marshal.GetLastWin32Error()}";
+        var pipeState = NativeMethods.PeekNamedPipe(
+            _output.SafeFileHandle,
+            IntPtr.Zero,
+            0,
+            IntPtr.Zero,
+            out var availableBytes,
+            IntPtr.Zero)
+            ? availableBytes.ToString()
+            : $"error:{Marshal.GetLastWin32Error()}";
+        return $"processExit={processState}; availableBytes={pipeState}; readerStarted={_readerStarted}; readerError={_readerError ?? "none"}";
     }
 
     private void ReadOutput()
     {
+        _readerStarted = true;
         var decoder = Encoding.UTF8.GetDecoder();
         var bytes = new byte[8192];
         var characters = new char[8192];
@@ -250,10 +273,12 @@ public sealed class ConPtySession : IAsyncDisposable
         catch (IOException)
         {
             // Closing a pseudoconsole ends its pipe with ERROR_BROKEN_PIPE.
+            _readerError = "broken-pipe";
         }
-        catch (ObjectDisposedException)
+        catch (ObjectDisposedException exception)
         {
             // A forced reconnect closes the read pipe to unblock the listener.
+            _readerError = exception.Message;
         }
         finally
         {
@@ -398,6 +423,20 @@ public sealed class ConPtySession : IAsyncDisposable
         [DllImport("kernel32.dll", SetLastError = true)]
         [return: MarshalAs(UnmanagedType.Bool)]
         internal static extern bool CloseHandle(IntPtr handle);
+
+        [DllImport("kernel32.dll", SetLastError = true)]
+        [return: MarshalAs(UnmanagedType.Bool)]
+        internal static extern bool GetExitCodeProcess(SafeFileHandle process, out uint exitCode);
+
+        [DllImport("kernel32.dll", SetLastError = true)]
+        [return: MarshalAs(UnmanagedType.Bool)]
+        internal static extern bool PeekNamedPipe(
+            SafeFileHandle pipe,
+            IntPtr buffer,
+            uint bufferSize,
+            IntPtr bytesRead,
+            out uint totalBytesAvailable,
+            IntPtr bytesLeftThisMessage);
 
         [DllImport("kernel32.dll")]
         internal static extern int CreatePseudoConsole(Coord size, IntPtr input, IntPtr output, uint flags, out IntPtr pseudoConsole);

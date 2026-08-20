@@ -28,7 +28,14 @@ public sealed class ConPtySessionTests
             if (output.ToString().Contains("HERDR_CONPTY_OK", StringComparison.Ordinal)) completed.TrySetResult();
         };
 
-        await completed.Task.WaitAsync(TimeSpan.FromSeconds(10));
+        try
+        {
+            await completed.Task.WaitAsync(TimeSpan.FromSeconds(10));
+        }
+        catch (TimeoutException exception)
+        {
+            throw new TimeoutException($"ConPTY produced no marker. {session.GetDebugState()} rawOutput={output}", exception);
+        }
 
         Assert.Contains("HERDR_CONPTY_OK", output.ToString());
     }
