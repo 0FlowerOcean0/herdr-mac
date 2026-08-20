@@ -88,7 +88,6 @@ public sealed class ConPtySession : IAsyncDisposable
         IntPtr pseudoOutputWrite = IntPtr.Zero;
         IntPtr pseudoConsole = IntPtr.Zero;
         IntPtr attributeList = IntPtr.Zero;
-        IntPtr pseudoConsoleValue = IntPtr.Zero;
         IntPtr environmentBlock = IntPtr.Zero;
 
         try
@@ -117,13 +116,11 @@ public sealed class ConPtySession : IAsyncDisposable
                 throw new Win32Exception(Marshal.GetLastWin32Error(), "Could not initialize the ConPTY process attributes.");
             }
 
-            pseudoConsoleValue = Marshal.AllocHGlobal(IntPtr.Size);
-            Marshal.WriteIntPtr(pseudoConsoleValue, pseudoConsole);
             if (!NativeMethods.UpdateProcThreadAttribute(
                     attributeList,
                     0,
                     ProcThreadAttributePseudoConsole,
-                    pseudoConsoleValue,
+                    pseudoConsole,
                     new IntPtr(IntPtr.Size),
                     IntPtr.Zero,
                     IntPtr.Zero))
@@ -179,7 +176,6 @@ public sealed class ConPtySession : IAsyncDisposable
                 NativeMethods.DeleteProcThreadAttributeList(attributeList);
                 Marshal.FreeHGlobal(attributeList);
             }
-            if (pseudoConsoleValue != IntPtr.Zero) Marshal.FreeHGlobal(pseudoConsoleValue);
             if (environmentBlock != IntPtr.Zero) Marshal.FreeHGlobal(environmentBlock);
         }
     }
