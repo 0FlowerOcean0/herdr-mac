@@ -116,7 +116,7 @@ public sealed class ConPtySession : IAsyncDisposable
                 pseudoOutputWrite,
                 0,
                 out pseudoConsole);
-            if (result < 0) Marshal.ThrowExceptionForHR(result);
+            if (result != 0) Marshal.ThrowExceptionForHR(result);
 
             var attributeListSize = IntPtr.Zero;
             NativeMethods.InitializeProcThreadAttributeList(IntPtr.Zero, 1, 0, ref attributeListSize);
@@ -344,10 +344,10 @@ public sealed class ConPtySession : IAsyncDisposable
         }
     }
 
-    private static StringBuilder BuildCommandLine(string executable, IReadOnlyList<string> arguments)
+    private static string BuildCommandLine(string executable, IReadOnlyList<string> arguments)
     {
         var values = new[] { executable }.Concat(arguments).Select(QuoteArgument);
-        return new StringBuilder(string.Join(' ', values));
+        return string.Join(' ', values);
     }
 
     internal static string QuoteArgument(string value)
@@ -419,7 +419,7 @@ public sealed class ConPtySession : IAsyncDisposable
         public IntPtr StandardError;
     }
 
-    [StructLayout(LayoutKind.Sequential)]
+    [StructLayout(LayoutKind.Sequential, CharSet = CharSet.Unicode)]
     private struct StartupInfoEx
     {
         public StartupInfo StartupInfo;
@@ -427,12 +427,12 @@ public sealed class ConPtySession : IAsyncDisposable
     }
 
     [StructLayout(LayoutKind.Sequential)]
-    private readonly struct ProcessInformation
+    private struct ProcessInformation
     {
-        public readonly IntPtr Process;
-        public readonly IntPtr Thread;
-        public readonly uint ProcessId;
-        public readonly uint ThreadId;
+        public IntPtr Process;
+        public IntPtr Thread;
+        public uint ProcessId;
+        public uint ThreadId;
     }
 
     [StructLayout(LayoutKind.Sequential)]
@@ -510,14 +510,14 @@ public sealed class ConPtySession : IAsyncDisposable
         [return: MarshalAs(UnmanagedType.Bool)]
         internal static extern bool CreateProcessW(
             string? applicationName,
-            StringBuilder commandLine,
+            string commandLine,
             ref SecurityAttributes processAttributes,
             ref SecurityAttributes threadAttributes,
             [MarshalAs(UnmanagedType.Bool)] bool inheritHandles,
             uint creationFlags,
             IntPtr environment,
             string? currentDirectory,
-            ref StartupInfoEx startupInfo,
+            [In] ref StartupInfoEx startupInfo,
             out ProcessInformation processInformation);
     }
 }
