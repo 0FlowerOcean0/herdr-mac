@@ -34,7 +34,9 @@ public sealed class ConPtySessionTests
         }
         catch (TimeoutException exception)
         {
-            throw new TimeoutException($"ConPTY produced no marker. {session.GetDebugState()} rawOutput={output}", exception);
+            var diagnostics = $"ConPTY produced no marker. {session.GetDebugState()} rawOutput={output}";
+            Console.Error.WriteLine(diagnostics);
+            throw new TimeoutException(diagnostics, exception);
         }
 
         Assert.Contains("HERDR_CONPTY_OK", output.ToString());

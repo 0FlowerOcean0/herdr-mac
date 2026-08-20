@@ -214,25 +214,26 @@ public sealed class ConPtySession : IAsyncDisposable
         if (_disposed) return;
         _disposed = true;
         _input.Dispose();
-        if (_pseudoConsole != IntPtr.Zero)
+        if (NativeMethods.GetExitCodeProcess(_process, out var exitCode) && exitCode == 259)
         {
-            var pseudoConsole = _pseudoConsole;
-            _pseudoConsole = IntPtr.Zero;
-            await Task.Run(() => NativeMethods.ClosePseudoConsole(pseudoConsole));
+            NativeMethods.TerminateProcess(_process, 1);
         }
+        _output.Dispose();
         try
         {
             await _readerTask.WaitAsync(TimeSpan.FromSeconds(2));
         }
         catch (TimeoutException)
         {
-            _output.Dispose();
+            // The dedicated listener owns no other resources after the pipe closes.
         }
-        catch (OperationCanceledException)
+        if (_pseudoConsole != IntPtr.Zero)
         {
-            // Expected when reconnecting or closing the window.
+            var pseudoConsole = _pseudoConsole;
+            _pseudoConsole = IntPtr.Zero;
+            var closeTask = Task.Run(() => NativeMethods.ClosePseudoConsole(pseudoConsole));
+            await Task.WhenAny(closeTask, Task.Delay(TimeSpan.FromSeconds(2)));
         }
-        _output.Dispose();
         _process.Dispose();
         _inputLock.Dispose();
     }
@@ -427,6 +428,10 @@ public sealed class ConPtySession : IAsyncDisposable
         [DllImport("kernel32.dll", SetLastError = true)]
         [return: MarshalAs(UnmanagedType.Bool)]
         internal static extern bool GetExitCodeProcess(SafeFileHandle process, out uint exitCode);
+
+        [DllImport("kernel32.dll", SetLastError = true)]
+        [return: MarshalAs(UnmanagedType.Bool)]
+        internal static extern bool TerminateProcess(SafeFileHandle process, uint exitCode);
 
         [DllImport("kernel32.dll", SetLastError = true)]
         [return: MarshalAs(UnmanagedType.Bool)]
