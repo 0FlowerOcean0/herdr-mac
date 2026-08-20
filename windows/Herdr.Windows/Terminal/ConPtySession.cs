@@ -13,7 +13,6 @@ public sealed class ConPtySession : IAsyncDisposable
     private readonly FileStream _input;
     private readonly FileStream _output;
     private readonly SemaphoreSlim _inputLock = new(1, 1);
-    private readonly CancellationTokenSource _cancellation = new();
     private readonly object _eventLock = new();
     private readonly StringBuilder _pendingOutput = new();
     private readonly Task _readerTask;
@@ -67,7 +66,11 @@ public sealed class ConPtySession : IAsyncDisposable
         // reads/writes for them, but the handles must not be marked as overlapped I/O.
         _input = new FileStream(input, FileAccess.Write, 4096, false);
         _output = new FileStream(output, FileAccess.Read, 4096, false);
-        _readerTask = Task.Run(ReadOutputAsync);
+        _readerTask = Task.Factory.StartNew(
+            ReadOutput,
+            CancellationToken.None,
+            TaskCreationOptions.LongRunning,
+            TaskScheduler.Default);
     }
 
     public static ConPtySession Start(
@@ -219,7 +222,6 @@ public sealed class ConPtySession : IAsyncDisposable
         }
         catch (TimeoutException)
         {
-            _cancellation.Cancel();
             _output.Dispose();
         }
         catch (OperationCanceledException)
@@ -228,31 +230,30 @@ public sealed class ConPtySession : IAsyncDisposable
         }
         _output.Dispose();
         _inputLock.Dispose();
-        _cancellation.Dispose();
     }
 
-    private async Task ReadOutputAsync()
+    private void ReadOutput()
     {
         var decoder = Encoding.UTF8.GetDecoder();
         var bytes = new byte[8192];
         var characters = new char[8192];
         try
         {
-            while (!_cancellation.IsCancellationRequested)
+            while (true)
             {
-                var count = await _output.ReadAsync(bytes, _cancellation.Token);
+                var count = _output.Read(bytes, 0, bytes.Length);
                 if (count == 0) break;
                 var characterCount = decoder.GetChars(bytes, 0, count, characters, 0, false);
                 if (characterCount > 0) PublishOutput(new string(characters, 0, characterCount));
             }
         }
-        catch (OperationCanceledException)
-        {
-            // Session disposal cancels the pipe read.
-        }
         catch (IOException)
         {
             // Closing a pseudoconsole ends its pipe with ERROR_BROKEN_PIPE.
+        }
+        catch (ObjectDisposedException)
+        {
+            // A forced reconnect closes the read pipe to unblock the listener.
         }
         finally
         {
