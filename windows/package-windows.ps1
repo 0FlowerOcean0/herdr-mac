@@ -11,6 +11,14 @@ $terminalRoot = Join-Path $PSScriptRoot "terminal-web"
 $publishDirectory = Join-Path $OutputDirectory "Herdr-for-Windows"
 $testHostDirectory = Join-Path $OutputDirectory "ConPtyTestHost"
 $archivePath = Join-Path $OutputDirectory "Herdr-for-Windows-$Version-x64.zip"
+$installerPath = Join-Path $OutputDirectory "Herdr-for-Windows-$Version-x64-Setup.exe"
+$installerScript = Join-Path $PSScriptRoot "installer\Herdr.Windows.iss"
+
+function Write-Sha256File([string]$Path) {
+    $digest = (Get-FileHash -LiteralPath $Path -Algorithm SHA256).Hash.ToLowerInvariant()
+    $checksumLine = "$digest  $([System.IO.Path]::GetFileName($Path))`n"
+    [System.IO.File]::WriteAllText("$Path.sha256", $checksumLine, [System.Text.Encoding]::ASCII)
+}
 
 Push-Location $terminalRoot
 try {
@@ -67,7 +75,26 @@ if (Test-Path -LiteralPath $archivePath) {
     Remove-Item -LiteralPath $archivePath -Force
 }
 Compress-Archive -Path (Join-Path $publishDirectory "*") -DestinationPath $archivePath -CompressionLevel Optimal
-$digest = (Get-FileHash -LiteralPath $archivePath -Algorithm SHA256).Hash.ToLowerInvariant()
-$checksumLine = "$digest  $([System.IO.Path]::GetFileName($archivePath))`n"
-[System.IO.File]::WriteAllText("$archivePath.sha256", $checksumLine, [System.Text.Encoding]::ASCII)
+Write-Sha256File $archivePath
+
+$innoSetupDirectory = Join-Path ([Environment]::GetFolderPath([Environment+SpecialFolder]::ProgramFilesX86)) "Inno Setup 6"
+$innoCompiler = Join-Path $innoSetupDirectory "ISCC.exe"
+if (-not (Test-Path -LiteralPath $innoCompiler)) {
+    $innoCommand = Get-Command "ISCC.exe" -ErrorAction SilentlyContinue
+    if ($null -eq $innoCommand) {
+        throw "Inno Setup 6 is required to build the Windows installer."
+    }
+    $innoCompiler = $innoCommand.Source
+}
+
+& $innoCompiler `
+    "/DMyAppVersion=$Version" `
+    "/DPublishDirectory=$publishDirectory" `
+    "/DInstallerOutputDirectory=$OutputDirectory" `
+    $installerScript
+if ($LASTEXITCODE -ne 0) { throw "Inno Setup failed with exit code $LASTEXITCODE." }
+if (-not (Test-Path -LiteralPath $installerPath)) { throw "The Windows installer was not created at $installerPath." }
+Write-Sha256File $installerPath
+
 Write-Host "Created $archivePath"
+Write-Host "Created $installerPath"
