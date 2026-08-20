@@ -147,7 +147,7 @@ public sealed class ConPtySession : IAsyncDisposable
             var securityAttributesSize = Marshal.SizeOf<SecurityAttributes>();
             var processAttributes = new SecurityAttributes { Length = securityAttributesSize };
             var threadAttributes = new SecurityAttributes { Length = securityAttributesSize };
-            var processCreated = NativeMethods.CreateProcessW(
+            var processCreated = NativeMethods.CreateProcess(
                 null,
                 commandLine,
                 ref processAttributes,
@@ -506,9 +506,9 @@ public sealed class ConPtySession : IAsyncDisposable
         [DllImport("kernel32.dll")]
         internal static extern void DeleteProcThreadAttributeList(IntPtr attributeList);
 
-        [DllImport("kernel32.dll", CharSet = CharSet.Unicode, SetLastError = true)]
+        [DllImport("kernel32.dll", SetLastError = true)]
         [return: MarshalAs(UnmanagedType.Bool)]
-        internal static extern bool CreateProcessW(
+        internal static extern bool CreateProcess(
             string? applicationName,
             string commandLine,
             ref SecurityAttributes processAttributes,
