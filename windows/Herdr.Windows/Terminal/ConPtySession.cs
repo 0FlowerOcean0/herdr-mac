@@ -8,7 +8,6 @@ namespace Herdr.Windows.Terminal;
 public sealed class ConPtySession : IAsyncDisposable
 {
     private const uint ExtendedStartupInfoPresent = 0x00080000;
-    private const uint CreateUnicodeEnvironment = 0x00000400;
     private static readonly IntPtr ProcThreadAttributePseudoConsole = new(0x00020016);
 
     private readonly FileStream _input;
@@ -76,8 +75,7 @@ public sealed class ConPtySession : IAsyncDisposable
         IReadOnlyList<string>? arguments = null,
         string? workingDirectory = null,
         short columns = 120,
-        short rows = 36,
-        IReadOnlyDictionary<string, string?>? environmentOverrides = null)
+        short rows = 36)
     {
         if (!File.Exists(executable)) throw new FileNotFoundException("The terminal executable was not found.", executable);
         if (columns < 1 || rows < 1) throw new ArgumentOutOfRangeException(nameof(columns), "The terminal size must be positive.");
@@ -88,7 +86,6 @@ public sealed class ConPtySession : IAsyncDisposable
         IntPtr pseudoOutputWrite = IntPtr.Zero;
         IntPtr pseudoConsole = IntPtr.Zero;
         IntPtr attributeList = IntPtr.Zero;
-        IntPtr environmentBlock = IntPtr.Zero;
 
         try
         {
@@ -134,15 +131,17 @@ public sealed class ConPtySession : IAsyncDisposable
                 AttributeList = attributeList
             };
             var commandLine = BuildCommandLine(executable, arguments ?? []);
-            environmentBlock = BuildEnvironmentBlock(environmentOverrides);
+            var securityAttributesSize = Marshal.SizeOf<SecurityAttributes>();
+            var processAttributes = new SecurityAttributes { Length = securityAttributesSize };
+            var threadAttributes = new SecurityAttributes { Length = securityAttributesSize };
             var processCreated = NativeMethods.CreateProcessW(
-                executable,
+                null,
                 commandLine,
-                IntPtr.Zero,
-                IntPtr.Zero,
+                ref processAttributes,
+                ref threadAttributes,
                 false,
-                ExtendedStartupInfoPresent | CreateUnicodeEnvironment,
-                environmentBlock,
+                ExtendedStartupInfoPresent,
+                IntPtr.Zero,
                 ResolveWorkingDirectory(workingDirectory),
                 ref startupInfo,
                 out var processInfo);
@@ -176,7 +175,6 @@ public sealed class ConPtySession : IAsyncDisposable
                 NativeMethods.DeleteProcThreadAttributeList(attributeList);
                 Marshal.FreeHGlobal(attributeList);
             }
-            if (environmentBlock != IntPtr.Zero) Marshal.FreeHGlobal(environmentBlock);
         }
     }
 
@@ -325,25 +323,6 @@ public sealed class ConPtySession : IAsyncDisposable
         return result.ToString();
     }
 
-    private static IntPtr BuildEnvironmentBlock(IReadOnlyDictionary<string, string?>? overrides)
-    {
-        var environment = Environment.GetEnvironmentVariables()
-            .Cast<System.Collections.DictionaryEntry>()
-            .ToDictionary(entry => (string)entry.Key, entry => entry.Value?.ToString() ?? string.Empty, StringComparer.OrdinalIgnoreCase);
-        environment["TERM"] = "xterm-256color";
-        environment["COLORTERM"] = "truecolor";
-        if (overrides is not null)
-        {
-            foreach (var pair in overrides)
-            {
-                if (pair.Value is null) environment.Remove(pair.Key);
-                else environment[pair.Key] = pair.Value;
-            }
-        }
-        var block = string.Join('\0', environment.OrderBy(pair => pair.Key, StringComparer.OrdinalIgnoreCase).Select(pair => $"{pair.Key}={pair.Value}")) + "\0\0";
-        return Marshal.StringToHGlobalUni(block);
-    }
-
     private static string ResolveWorkingDirectory(string? requested)
     {
         if (!string.IsNullOrWhiteSpace(requested) && Directory.Exists(requested)) return Path.GetFullPath(requested);
@@ -401,6 +380,14 @@ public sealed class ConPtySession : IAsyncDisposable
         public readonly uint ThreadId;
     }
 
+    [StructLayout(LayoutKind.Sequential)]
+    private struct SecurityAttributes
+    {
+        public int Length;
+        public IntPtr SecurityDescriptor;
+        public int InheritHandle;
+    }
+
     private static class NativeMethods
     {
         [DllImport("kernel32.dll", SetLastError = true)]
@@ -443,8 +430,8 @@ public sealed class ConPtySession : IAsyncDisposable
         internal static extern bool CreateProcessW(
             string? applicationName,
             StringBuilder commandLine,
-            IntPtr processAttributes,
-            IntPtr threadAttributes,
+            ref SecurityAttributes processAttributes,
+            ref SecurityAttributes threadAttributes,
             [MarshalAs(UnmanagedType.Bool)] bool inheritHandles,
             uint creationFlags,
             IntPtr environment,
