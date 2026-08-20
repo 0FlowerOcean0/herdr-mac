@@ -14,7 +14,9 @@ $archivePath = Join-Path $OutputDirectory "Herdr-for-Windows-$Version-x64.zip"
 Push-Location $terminalRoot
 try {
     npm ci
+    if ($LASTEXITCODE -ne 0) { throw "npm ci failed with exit code $LASTEXITCODE." }
     npm run build
+    if ($LASTEXITCODE -ne 0) { throw "The terminal asset build failed with exit code $LASTEXITCODE." }
 } finally {
     Pop-Location
 }
@@ -23,6 +25,7 @@ dotnet test (Join-Path $PSScriptRoot "Herdr.Windows.Tests\Herdr.Windows.Tests.cs
     --configuration $Configuration `
     --runtime win-x64 `
     -p:Platform=x64
+if ($LASTEXITCODE -ne 0) { throw "Windows tests failed with exit code $LASTEXITCODE." }
 
 if (Test-Path -LiteralPath $publishDirectory) {
     Remove-Item -LiteralPath $publishDirectory -Recurse -Force
@@ -36,6 +39,7 @@ dotnet publish (Join-Path $PSScriptRoot "Herdr.Windows\Herdr.Windows.csproj") `
     -p:Platform=x64 `
     -p:Version=$Version `
     --output $publishDirectory
+if ($LASTEXITCODE -ne 0) { throw "Windows publish failed with exit code $LASTEXITCODE." }
 
 Copy-Item -LiteralPath (Join-Path $repositoryRoot "LICENSE") -Destination $publishDirectory
 Copy-Item -LiteralPath (Join-Path $repositoryRoot "THIRD_PARTY_NOTICES.md") -Destination $publishDirectory

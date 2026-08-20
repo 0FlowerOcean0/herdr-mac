@@ -64,8 +64,10 @@ public sealed class ConPtySession : IAsyncDisposable
     private ConPtySession(IntPtr pseudoConsole, SafeFileHandle input, SafeFileHandle output)
     {
         _pseudoConsole = pseudoConsole;
-        _input = new FileStream(input, FileAccess.Write, 4096, true);
-        _output = new FileStream(output, FileAccess.Read, 4096, true);
+        // CreatePipe returns synchronous handles. FileStream still provides Task-based
+        // reads/writes for them, but the handles must not be marked as overlapped I/O.
+        _input = new FileStream(input, FileAccess.Write, 4096, false);
+        _output = new FileStream(output, FileAccess.Read, 4096, false);
         _readerTask = Task.Run(ReadOutputAsync);
     }
 
