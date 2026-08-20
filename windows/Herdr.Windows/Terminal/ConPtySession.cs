@@ -12,12 +12,15 @@ public sealed class ConPtySession : IAsyncDisposable
 
     private readonly SafeFileHandle _input;
     private readonly SafeFileHandle _output;
+    private readonly SafeFileHandle _pseudoInput;
+    private readonly SafeFileHandle _pseudoOutput;
     private readonly SafeFileHandle _process;
     private readonly SemaphoreSlim _inputLock = new(1, 1);
     private readonly object _eventLock = new();
     private readonly StringBuilder _pendingOutput = new();
     private readonly Task _readerTask;
     private IntPtr _pseudoConsole;
+    private IntPtr _attributeList;
     private bool _disposed;
     private bool _hasExited;
     private Action<string>? _outputReceived;
@@ -62,12 +65,22 @@ public sealed class ConPtySession : IAsyncDisposable
         }
     }
 
-    private ConPtySession(IntPtr pseudoConsole, SafeFileHandle input, SafeFileHandle output, SafeFileHandle process)
+    private ConPtySession(
+        IntPtr pseudoConsole,
+        IntPtr attributeList,
+        SafeFileHandle input,
+        SafeFileHandle output,
+        SafeFileHandle pseudoInput,
+        SafeFileHandle pseudoOutput,
+        SafeFileHandle process)
     {
         _pseudoConsole = pseudoConsole;
+        _attributeList = attributeList;
         _process = process;
         _input = input;
         _output = output;
+        _pseudoInput = pseudoInput;
+        _pseudoOutput = pseudoOutput;
         _readerTask = Task.Factory.StartNew(
             ReadOutput,
             CancellationToken.None,
@@ -104,11 +117,6 @@ public sealed class ConPtySession : IAsyncDisposable
                 0,
                 out pseudoConsole);
             if (result < 0) Marshal.ThrowExceptionForHR(result);
-
-            NativeMethods.CloseHandle(pseudoInputRead);
-            pseudoInputRead = IntPtr.Zero;
-            NativeMethods.CloseHandle(pseudoOutputWrite);
-            pseudoOutputWrite = IntPtr.Zero;
 
             var attributeListSize = IntPtr.Zero;
             NativeMethods.InitializeProcThreadAttributeList(IntPtr.Zero, 1, 0, ref attributeListSize);
@@ -162,7 +170,20 @@ public sealed class ConPtySession : IAsyncDisposable
             hostInputWrite = IntPtr.Zero;
             var outputHandle = new SafeFileHandle(hostOutputRead, true);
             hostOutputRead = IntPtr.Zero;
-            return new ConPtySession(pseudoConsole, inputHandle, outputHandle, processHandle);
+            var pseudoInputHandle = new SafeFileHandle(pseudoInputRead, true);
+            pseudoInputRead = IntPtr.Zero;
+            var pseudoOutputHandle = new SafeFileHandle(pseudoOutputWrite, true);
+            pseudoOutputWrite = IntPtr.Zero;
+            var ownedAttributeList = attributeList;
+            attributeList = IntPtr.Zero;
+            return new ConPtySession(
+                pseudoConsole,
+                ownedAttributeList,
+                inputHandle,
+                outputHandle,
+                pseudoInputHandle,
+                pseudoOutputHandle,
+                processHandle);
         }
         catch
         {
@@ -237,6 +258,14 @@ public sealed class ConPtySession : IAsyncDisposable
             _pseudoConsole = IntPtr.Zero;
             var closeTask = Task.Run(() => NativeMethods.ClosePseudoConsole(pseudoConsole));
             await Task.WhenAny(closeTask, Task.Delay(TimeSpan.FromSeconds(2)));
+        }
+        _pseudoInput.Dispose();
+        _pseudoOutput.Dispose();
+        if (_attributeList != IntPtr.Zero)
+        {
+            NativeMethods.DeleteProcThreadAttributeList(_attributeList);
+            Marshal.FreeHGlobal(_attributeList);
+            _attributeList = IntPtr.Zero;
         }
         _process.Dispose();
         _inputLock.Dispose();
