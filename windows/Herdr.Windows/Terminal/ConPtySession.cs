@@ -8,6 +8,7 @@ namespace Herdr.Windows.Terminal;
 public sealed class ConPtySession : IAsyncDisposable
 {
     private const uint ExtendedStartupInfoPresent = 0x00080000;
+    private const uint StartfUseStdHandles = 0x00000100;
     private static readonly IntPtr ProcThreadAttributePseudoConsole = new(0x00020016);
 
     private readonly SafeFileHandle _input;
@@ -140,7 +141,13 @@ public sealed class ConPtySession : IAsyncDisposable
 
             var startupInfo = new StartupInfoEx
             {
-                StartupInfo = new StartupInfo { Size = (uint)Marshal.SizeOf<StartupInfoEx>() },
+                StartupInfo = new StartupInfo
+                {
+                    Size = (uint)Marshal.SizeOf<StartupInfoEx>(),
+                    // Prevent Windows from duplicating redirected parent handles into
+                    // the child before ConPTY replaces the three standard streams.
+                    Flags = StartfUseStdHandles
+                },
                 AttributeList = attributeList
             };
             var commandLine = BuildCommandLine(executable, arguments ?? []);
