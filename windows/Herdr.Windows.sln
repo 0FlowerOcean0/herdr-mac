@@ -8,6 +8,8 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Herdr.Windows.Tests", "Herd
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Herdr.Windows.TestHost", "Herdr.Windows.TestHost\Herdr.Windows.TestHost.csproj", "{4AC53B51-E6B2-4FC2-BB84-8708D7393E21}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Herdr.Windows.ConPtySmoke", "Herdr.Windows.ConPtySmoke\Herdr.Windows.ConPtySmoke.csproj", "{DF9B4D3C-783E-45B9-892B-116952077B53}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|x64 = Debug|x64
@@ -26,5 +28,9 @@ Global
 		{4AC53B51-E6B2-4FC2-BB84-8708D7393E21}.Debug|x64.Build.0 = Debug|x64
 		{4AC53B51-E6B2-4FC2-BB84-8708D7393E21}.Release|x64.ActiveCfg = Release|x64
 		{4AC53B51-E6B2-4FC2-BB84-8708D7393E21}.Release|x64.Build.0 = Release|x64
+		{DF9B4D3C-783E-45B9-892B-116952077B53}.Debug|x64.ActiveCfg = Debug|x64
+		{DF9B4D3C-783E-45B9-892B-116952077B53}.Debug|x64.Build.0 = Debug|x64
+		{DF9B4D3C-783E-45B9-892B-116952077B53}.Release|x64.ActiveCfg = Release|x64
+		{DF9B4D3C-783E-45B9-892B-116952077B53}.Release|x64.Build.0 = Release|x64
 	EndGlobalSection
 EndGlobal

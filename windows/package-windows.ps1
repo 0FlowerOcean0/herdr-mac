@@ -31,6 +31,14 @@ dotnet publish (Join-Path $PSScriptRoot "Herdr.Windows.TestHost\Herdr.Windows.Te
 if ($LASTEXITCODE -ne 0) { throw "The ConPTY test host failed to publish with exit code $LASTEXITCODE." }
 $env:HERDR_CONPTY_TEST_HOST = Join-Path $testHostDirectory "Herdr.Windows.TestHost.exe"
 
+dotnet run `
+    --project (Join-Path $PSScriptRoot "Herdr.Windows.ConPtySmoke\Herdr.Windows.ConPtySmoke.csproj") `
+    --configuration $Configuration `
+    --runtime win-x64 `
+    -- `
+    $env:HERDR_CONPTY_TEST_HOST
+if ($LASTEXITCODE -ne 0) { throw "The standalone ConPTY smoke test failed with exit code $LASTEXITCODE." }
+
 dotnet test (Join-Path $PSScriptRoot "Herdr.Windows.Tests\Herdr.Windows.Tests.csproj") `
     --configuration $Configuration `
     --runtime win-x64 `
