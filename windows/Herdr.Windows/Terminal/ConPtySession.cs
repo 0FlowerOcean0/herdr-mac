@@ -140,14 +140,14 @@ public sealed class ConPtySession : IAsyncDisposable
 
             var startupInfo = new StartupInfoEx
             {
-                StartupInfo = new StartupInfo { Size = Marshal.SizeOf<StartupInfoEx>() },
+                StartupInfo = new StartupInfo { Size = (uint)Marshal.SizeOf<StartupInfoEx>() },
                 AttributeList = attributeList
             };
             var commandLine = BuildCommandLine(executable, arguments ?? []);
             var securityAttributesSize = Marshal.SizeOf<SecurityAttributes>();
             var processAttributes = new SecurityAttributes { Length = securityAttributesSize };
             var threadAttributes = new SecurityAttributes { Length = securityAttributesSize };
-            var processCreated = NativeMethods.CreateProcess(
+            var processCreated = NativeMethods.CreateProcessW(
                 null,
                 commandLine,
                 ref processAttributes,
@@ -344,10 +344,10 @@ public sealed class ConPtySession : IAsyncDisposable
         }
     }
 
-    private static string BuildCommandLine(string executable, IReadOnlyList<string> arguments)
+    private static StringBuilder BuildCommandLine(string executable, IReadOnlyList<string> arguments)
     {
         var values = new[] { executable }.Concat(arguments).Select(QuoteArgument);
-        return string.Join(' ', values);
+        return new StringBuilder(string.Join(' ', values));
     }
 
     internal static string QuoteArgument(string value)
@@ -396,30 +396,30 @@ public sealed class ConPtySession : IAsyncDisposable
         public readonly short Y = y;
     }
 
-    [StructLayout(LayoutKind.Sequential, CharSet = CharSet.Unicode)]
+    [StructLayout(LayoutKind.Sequential)]
     private struct StartupInfo
     {
-        public int Size;
-        public string? Reserved;
-        public string? Desktop;
-        public string? Title;
-        public int X;
-        public int Y;
-        public int XSize;
-        public int YSize;
-        public int XCountChars;
-        public int YCountChars;
-        public int FillAttribute;
-        public int Flags;
-        public short ShowWindow;
-        public short Reserved2Count;
+        public uint Size;
+        public IntPtr Reserved;
+        public IntPtr Desktop;
+        public IntPtr Title;
+        public uint X;
+        public uint Y;
+        public uint XSize;
+        public uint YSize;
+        public uint XCountChars;
+        public uint YCountChars;
+        public uint FillAttribute;
+        public uint Flags;
+        public ushort ShowWindow;
+        public ushort Reserved2Count;
         public IntPtr Reserved2;
         public IntPtr StandardInput;
         public IntPtr StandardOutput;
         public IntPtr StandardError;
     }
 
-    [StructLayout(LayoutKind.Sequential, CharSet = CharSet.Unicode)]
+    [StructLayout(LayoutKind.Sequential)]
     private struct StartupInfoEx
     {
         public StartupInfo StartupInfo;
@@ -506,11 +506,11 @@ public sealed class ConPtySession : IAsyncDisposable
         [DllImport("kernel32.dll")]
         internal static extern void DeleteProcThreadAttributeList(IntPtr attributeList);
 
-        [DllImport("kernel32.dll", SetLastError = true)]
+        [DllImport("kernel32.dll", EntryPoint = "CreateProcessW", ExactSpelling = true, CharSet = CharSet.Unicode, SetLastError = true)]
         [return: MarshalAs(UnmanagedType.Bool)]
-        internal static extern bool CreateProcess(
+        internal static extern bool CreateProcessW(
             string? applicationName,
-            string commandLine,
+            StringBuilder commandLine,
             ref SecurityAttributes processAttributes,
             ref SecurityAttributes threadAttributes,
             [MarshalAs(UnmanagedType.Bool)] bool inheritHandles,
