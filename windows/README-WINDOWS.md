@@ -4,11 +4,11 @@
 
 ## 下载
 
-当前公开版本：[`0.1.0-preview.1`](https://github.com/0FlowerOcean0/herdr-mac/releases/tag/windows-v0.1.0-preview.1)
+当前公开版本：[`0.1.0-preview.2`](https://github.com/0FlowerOcean0/herdr-mac/releases/tag/windows-v0.1.0-preview.2)
 
-- [下载 Setup.exe（推荐）](https://github.com/0FlowerOcean0/herdr-mac/releases/download/windows-v0.1.0-preview.1/Herdr-for-Windows-0.1.0-preview.1-x64-Setup.exe)
-- [下载 Setup.exe SHA-256](https://github.com/0FlowerOcean0/herdr-mac/releases/download/windows-v0.1.0-preview.1/Herdr-for-Windows-0.1.0-preview.1-x64-Setup.exe.sha256)
-- [下载免安装 ZIP](https://github.com/0FlowerOcean0/herdr-mac/releases/download/windows-v0.1.0-preview.1/Herdr-for-Windows-0.1.0-preview.1-x64.zip)
+- [下载 Setup.exe（推荐）](https://github.com/0FlowerOcean0/herdr-mac/releases/download/windows-v0.1.0-preview.2/Herdr-for-Windows-0.1.0-preview.2-x64-Setup.exe)
+- [下载 Setup.exe SHA-256](https://github.com/0FlowerOcean0/herdr-mac/releases/download/windows-v0.1.0-preview.2/Herdr-for-Windows-0.1.0-preview.2-x64-Setup.exe.sha256)
+- [下载免安装 ZIP](https://github.com/0FlowerOcean0/herdr-mac/releases/download/windows-v0.1.0-preview.2/Herdr-for-Windows-0.1.0-preview.2-x64.zip)
 
 Setup.exe 会安装到当前用户的 `%LOCALAPPDATA%\Programs\Herdr Native Client`，不需要管理员权限，并创建开始菜单入口和标准卸载项。
 
@@ -30,7 +30,7 @@ powershell -ExecutionPolicy Bypass -c "irm https://herdr.dev/install.ps1 | iex"
 1. 双击下载的 Setup.exe 并完成安装。
 2. 从开始菜单启动 `Herdr`。
 3. 客户端会自动查找 `%LOCALAPPDATA%\Programs\Herdr\bin\herdr.exe`、`%USERPROFILE%\.herdr\packages\standalone\current\herdr.exe`、`HERDR_BIN_PATH` 与 `PATH`。
-4. 在右上角设置中可选择命名会话、启动目录和 Herdr 官方主题。
+4. 右上角文件夹按钮可直接选择工作目录；设置中仍可配置命名会话、默认启动目录和 Herdr 官方主题。
 
 当前安装器尚未使用商业代码签名证书，SmartScreen 可能显示“未知发布者”。请只从本项目 Release 下载，核对 SHA-256 后选择“更多信息 → 仍要运行”。如使用免安装 ZIP，必须完整解压，不能只复制其中一个 EXE。
 

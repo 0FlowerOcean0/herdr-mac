@@ -113,6 +113,13 @@ struct HerdrConnection: Codable, Equatable {
         }
     }
 
+    func openingLocalDirectory(_ workingDirectory: String) -> HerdrConnection {
+        .local(
+            sessionName: mode == .local ? sessionName : nil,
+            workingDirectory: workingDirectory
+        )
+    }
+
     private static func normalized(_ value: String?) -> String? {
         let trimmed = value?.trimmingCharacters(in: .whitespacesAndNewlines) ?? ""
         return trimmed.isEmpty ? nil : trimmed

@@ -18,8 +18,8 @@ Herdr Native Clients 是一组非官方、开源的 [Herdr](https://herdr.dev/) 
 
 | 平台 | 版本 | 系统要求 | 推荐安装 | 便携包 |
 | --- | --- | --- | --- | --- |
-| macOS | `v0.1.0` | macOS 14+、Apple Silicon | [下载 DMG](https://github.com/0FlowerOcean0/herdr-mac/releases/download/v0.1.0/Herdr-for-Mac-0.1.0-arm64.dmg) | [下载 ZIP](https://github.com/0FlowerOcean0/herdr-mac/releases/download/v0.1.0/Herdr-for-Mac-0.1.0-arm64.zip) |
-| Windows Preview | `0.1.0-preview.1` | Windows 10 19041+ / Windows 11、x64 | [下载 Setup.exe](https://github.com/0FlowerOcean0/herdr-mac/releases/download/windows-v0.1.0-preview.1/Herdr-for-Windows-0.1.0-preview.1-x64-Setup.exe) | [下载 ZIP](https://github.com/0FlowerOcean0/herdr-mac/releases/download/windows-v0.1.0-preview.1/Herdr-for-Windows-0.1.0-preview.1-x64.zip) |
+| macOS | `v0.1.1` | macOS 14+、Apple Silicon | [下载 DMG](https://github.com/0FlowerOcean0/herdr-mac/releases/download/v0.1.1/Herdr-for-Mac-0.1.1-arm64.dmg) | [下载 ZIP](https://github.com/0FlowerOcean0/herdr-mac/releases/download/v0.1.1/Herdr-for-Mac-0.1.1-arm64.zip) |
+| Windows Preview | `0.1.0-preview.2` | Windows 10 19041+ / Windows 11、x64 | [下载 Setup.exe](https://github.com/0FlowerOcean0/herdr-mac/releases/download/windows-v0.1.0-preview.2/Herdr-for-Windows-0.1.0-preview.2-x64-Setup.exe) | [下载 ZIP](https://github.com/0FlowerOcean0/herdr-mac/releases/download/windows-v0.1.0-preview.2/Herdr-for-Windows-0.1.0-preview.2-x64.zip) |
 
 [查看全部 Releases](https://github.com/0FlowerOcean0/herdr-mac/releases)
 
@@ -40,6 +40,7 @@ Herdr Native Clients 是一组非官方、开源的 [Herdr](https://herdr.dev/) 
 - 运行真正的 Herdr TUI，不重做或裁剪 Herdr 功能
 - 支持键盘、鼠标、ANSI、TrueColor、复制粘贴和全屏终端界面
 - 支持默认会话、命名会话和指定项目启动目录
+- 顶部栏可直接选择工作目录并立即重新连接
 - 内置 18 套与 Herdr 主题对应的配色
 - 主题写入 Herdr 官方配置文件，同时保留其他配置项
 - 自动查找 Herdr 可执行文件，也支持 `HERDR_BIN_PATH`
@@ -73,12 +74,12 @@ Herdr Native Clients 是一组非官方、开源的 [Herdr](https://herdr.dev/) 
    herdr --version
    ```
 
-3. 下载并打开 [Herdr-for-Mac-0.1.0-arm64.dmg](https://github.com/0FlowerOcean0/herdr-mac/releases/download/v0.1.0/Herdr-for-Mac-0.1.0-arm64.dmg)。
+3. 下载并打开 [Herdr-for-Mac-0.1.1-arm64.dmg](https://github.com/0FlowerOcean0/herdr-mac/releases/download/v0.1.1/Herdr-for-Mac-0.1.1-arm64.dmg)。
 4. 将 `Herdr.app` 拖到 DMG 中的 `Applications`，再从“应用程序”启动。
 
 当前 macOS Release 使用 ad-hoc 签名，尚未进行 Apple Developer ID 签名与公证。首次打开时，请在 Finder 中按住 Control 点击应用并选择“打开”，或前往“系统设置 → 隐私与安全性”确认打开。
 
-[下载 DMG SHA-256](https://github.com/0FlowerOcean0/herdr-mac/releases/download/v0.1.0/Herdr-for-Mac-0.1.0-arm64.dmg.sha256)
+[下载 DMG SHA-256](https://github.com/0FlowerOcean0/herdr-mac/releases/download/v0.1.1/Herdr-for-Mac-0.1.1-arm64.dmg.sha256)
 
 ### Windows Preview
 
@@ -88,14 +89,14 @@ Herdr Native Clients 是一组非官方、开源的 [Herdr](https://herdr.dev/) 
    powershell -ExecutionPolicy Bypass -c "irm https://herdr.dev/install.ps1 | iex"
    ```
 
-2. 下载并运行 [Herdr-for-Windows-0.1.0-preview.1-x64-Setup.exe](https://github.com/0FlowerOcean0/herdr-mac/releases/download/windows-v0.1.0-preview.1/Herdr-for-Windows-0.1.0-preview.1-x64-Setup.exe)。
+2. 下载并运行 [Herdr-for-Windows-0.1.0-preview.2-x64-Setup.exe](https://github.com/0FlowerOcean0/herdr-mac/releases/download/windows-v0.1.0-preview.2/Herdr-for-Windows-0.1.0-preview.2-x64-Setup.exe)。
 3. 按安装向导完成安装，然后从开始菜单启动 `Herdr`。
 
 安装器会将客户端安装到当前用户的 `%LOCALAPPDATA%\Programs\Herdr Native Client`，并在 Windows“已安装的应用”中提供卸载入口。安装包已包含 .NET 和 Windows App SDK 运行文件，但系统仍需 Microsoft Edge WebView2 Runtime。
 
 当前 Setup.exe 尚未使用商业代码签名证书，Windows SmartScreen 可能显示“未知发布者”。请只从本仓库 Release 下载，并先使用对应 SHA-256 文件校验；确认后可选择“更多信息 → 仍要运行”。
 
-[下载 Setup.exe SHA-256](https://github.com/0FlowerOcean0/herdr-mac/releases/download/windows-v0.1.0-preview.1/Herdr-for-Windows-0.1.0-preview.1-x64-Setup.exe.sha256)
+[下载 Setup.exe SHA-256](https://github.com/0FlowerOcean0/herdr-mac/releases/download/windows-v0.1.0-preview.2/Herdr-for-Windows-0.1.0-preview.2-x64-Setup.exe.sha256)
 
 需要免安装版本时，可下载完整 ZIP；不要只复制其中一个 EXE。
 
@@ -193,7 +194,9 @@ assets/screenshots/       README 截图
 
 ## 验证状态
 
-Windows `0.1.0-preview.1` 已完成：
+macOS `0.1.1` 已通过 `21/21` 项测试。
+
+Windows `0.1.0-preview.2` 已完成：
 
 - Windows runner 编译
 - ConPTY 双向输入与输出 smoke

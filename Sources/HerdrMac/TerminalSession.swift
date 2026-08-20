@@ -153,6 +153,10 @@ final class TerminalSessionModel: ObservableObject {
         setConnection(.local(sessionName: sessionName, workingDirectory: workingDirectory))
     }
 
+    func openWorkingDirectory(_ workingDirectory: String) {
+        setConnection(connection.openingLocalDirectory(workingDirectory))
+    }
+
     func connectRemote(
         target: String,
         sessionName: String? = nil,

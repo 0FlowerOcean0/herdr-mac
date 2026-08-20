@@ -60,6 +60,25 @@ final class TerminalSessionTests: XCTestCase {
         XCTAssertEqual(spec.currentDirectory, "/private/tmp")
     }
 
+    func testOpeningDirectoryPreservesNamedLocalSession() {
+        let connection = HerdrConnection.local(sessionName: "work")
+            .openingLocalDirectory(" /private/tmp ")
+
+        XCTAssertEqual(connection.mode, .local)
+        XCTAssertEqual(connection.sessionName, "work")
+        XCTAssertEqual(connection.workingDirectory, "/private/tmp")
+    }
+
+    func testOpeningDirectoryFromRemoteReturnsToDefaultLocalSession() {
+        let connection = HerdrConnection.remote(target: "workbox", sessionName: "remote")
+            .openingLocalDirectory("/private/tmp")
+
+        XCTAssertEqual(connection.mode, .local)
+        XCTAssertNil(connection.sessionName)
+        XCTAssertNil(connection.remoteTarget)
+        XCTAssertEqual(connection.workingDirectory, "/private/tmp")
+    }
+
     func testSessionCatalogDecodesOfficialJSONShape() throws {
         let data = Data(#"{"sessions":[{"default":false,"name":"work","running":true,"session_dir":"/tmp/work","socket_path":"/tmp/work.sock"},{"default":true,"name":"default","running":false,"session_dir":"/tmp/default","socket_path":"/tmp/default.sock"}]}"#.utf8)
         let sessions = try HerdrSessionCatalog.decode(data)

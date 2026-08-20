@@ -1,6 +1,6 @@
 #define MyAppName "Herdr Native Client"
 #ifndef MyAppVersion
-  #define MyAppVersion "0.1.0-preview.1"
+  #define MyAppVersion "0.1.0-preview.2"
 #endif
 #ifndef PublishDirectory
   #define PublishDirectory "..\..\artifacts\Herdr-for-Windows"

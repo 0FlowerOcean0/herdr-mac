@@ -51,12 +51,12 @@ jobs:
       - name: Upload Windows packages
         uses: actions/upload-artifact@v4
         with:
-          name: Herdr-for-Windows-0.1.0-preview.1-x64
+          name: Herdr-for-Windows-0.1.0-preview.2-x64
           path: |
-            artifacts/Herdr-for-Windows-0.1.0-preview.1-x64-Setup.exe
-            artifacts/Herdr-for-Windows-0.1.0-preview.1-x64-Setup.exe.sha256
-            artifacts/Herdr-for-Windows-0.1.0-preview.1-x64.zip
-            artifacts/Herdr-for-Windows-0.1.0-preview.1-x64.zip.sha256
+            artifacts/Herdr-for-Windows-0.1.0-preview.2-x64-Setup.exe
+            artifacts/Herdr-for-Windows-0.1.0-preview.2-x64-Setup.exe.sha256
+            artifacts/Herdr-for-Windows-0.1.0-preview.2-x64.zip
+            artifacts/Herdr-for-Windows-0.1.0-preview.2-x64.zip.sha256
           if-no-files-found: error
 
       - name: Publish prerelease
@@ -66,10 +66,10 @@ jobs:
           GH_TOKEN: ${{ github.token }}
         run: >-
           gh release create $env:GITHUB_REF_NAME
-          artifacts/Herdr-for-Windows-0.1.0-preview.1-x64-Setup.exe
-          artifacts/Herdr-for-Windows-0.1.0-preview.1-x64-Setup.exe.sha256
-          artifacts/Herdr-for-Windows-0.1.0-preview.1-x64.zip
-          artifacts/Herdr-for-Windows-0.1.0-preview.1-x64.zip.sha256
-          --title "Herdr for Windows 0.1.0 Preview 1"
+          artifacts/Herdr-for-Windows-0.1.0-preview.2-x64-Setup.exe
+          artifacts/Herdr-for-Windows-0.1.0-preview.2-x64-Setup.exe.sha256
+          artifacts/Herdr-for-Windows-0.1.0-preview.2-x64.zip
+          artifacts/Herdr-for-Windows-0.1.0-preview.2-x64.zip.sha256
+          --title "Herdr for Windows 0.1.0 Preview 2"
           --notes "Unofficial native WinUI 3 client for the official Herdr Windows Preview. Requires a separately installed herdr.exe."
           --prerelease

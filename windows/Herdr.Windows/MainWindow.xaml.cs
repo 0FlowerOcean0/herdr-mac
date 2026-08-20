@@ -167,6 +167,26 @@ public sealed partial class MainWindow : Window
         await ConnectAsync();
     }
 
+    private async void FolderButton_Click(object sender, RoutedEventArgs e)
+    {
+        var directory = await PickWorkingDirectoryAsync();
+        if (directory is null) return;
+
+        _settings.WorkingDirectory = directory;
+        _settingsService.Save(_settings);
+        SetStatus($"正在打开 {Path.GetFileName(directory)}…", false);
+        await ConnectAsync();
+    }
+
+    private async Task<string?> PickWorkingDirectoryAsync()
+    {
+        var picker = new FolderPicker { SuggestedStartLocation = PickerLocationId.ComputerFolder };
+        picker.FileTypeFilter.Add("*");
+        WinRT.Interop.InitializeWithWindow.Initialize(picker, WinRT.Interop.WindowNative.GetWindowHandle(this));
+        var folder = await picker.PickSingleFolderAsync();
+        return folder?.Path;
+    }
+
     private async void SettingsButton_Click(object sender, RoutedEventArgs e)
     {
         var herdrPathBox = new TextBox
@@ -200,11 +220,8 @@ public sealed partial class MainWindow : Window
         var chooseDirectoryButton = new Button { Content = "选择文件夹", HorizontalAlignment = HorizontalAlignment.Left };
         chooseDirectoryButton.Click += async (_, _) =>
         {
-            var picker = new FolderPicker { SuggestedStartLocation = PickerLocationId.ComputerFolder };
-            picker.FileTypeFilter.Add("*");
-            WinRT.Interop.InitializeWithWindow.Initialize(picker, WinRT.Interop.WindowNative.GetWindowHandle(this));
-            var folder = await picker.PickSingleFolderAsync();
-            if (folder is not null) workingDirectoryBox.Text = folder.Path;
+            var directory = await PickWorkingDirectoryAsync();
+            if (directory is not null) workingDirectoryBox.Text = directory;
         };
 
         var themePicker = new ComboBox

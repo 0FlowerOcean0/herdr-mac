@@ -30,6 +30,7 @@ struct HerdrMacApp: App {
                 Button("从文件夹启动…") {
                     chooseWorkingDirectory()
                 }
+                .keyboardShortcut("o", modifiers: .command)
                 Divider()
                 Button("连接远程主机…") {
                     session.showingRemoteConnection = true
@@ -62,11 +63,11 @@ struct HerdrMacApp: App {
     private func chooseWorkingDirectory() {
         let panel = NSOpenPanel()
         panel.title = "选择 Herdr 工作目录"
-        panel.prompt = "启动"
+        panel.prompt = "在此目录打开"
         panel.canChooseFiles = false
         panel.canChooseDirectories = true
         panel.allowsMultipleSelection = false
         guard panel.runModal() == .OK, let directory = panel.url else { return }
-        session.connectLocal(workingDirectory: directory.path)
+        session.openWorkingDirectory(directory.path)
     }
 }

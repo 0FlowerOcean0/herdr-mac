@@ -95,6 +95,20 @@ struct TerminalRootView: View {
             .accessibilityValue(session.theme.title)
 
             Button {
+                chooseWorkingDirectory()
+            } label: {
+                Image(systemName: session.connection.workingDirectory == nil ? "folder" : "folder.fill")
+                    .font(.system(size: 12, weight: .medium))
+                    .foregroundStyle(workingDirectoryButtonColor)
+                    .frame(width: 26, height: 26)
+                    .contentShape(Rectangle())
+            }
+            .buttonStyle(.plain)
+            .help(workingDirectoryHelp)
+            .accessibilityLabel("选择 Herdr 工作目录")
+            .accessibilityValue(session.connection.workingDirectory ?? "未指定")
+
+            Button {
                 openSettings()
             } label: {
                 Image(systemName: "slider.horizontal.3")
@@ -115,6 +129,36 @@ struct TerminalRootView: View {
                 .fill(session.theme.palette.foreground.color.opacity(0.12))
                 .frame(height: 1)
         }
+    }
+
+    private var workingDirectoryButtonColor: Color {
+        if session.connection.workingDirectory == nil {
+            session.theme.palette.foreground.color.opacity(0.72)
+        } else {
+            session.theme.palette.cursor.color
+        }
+    }
+
+    private var workingDirectoryHelp: String {
+        if let directory = session.connection.workingDirectory {
+            "工作目录：\(directory)"
+        } else {
+            "选择工作目录"
+        }
+    }
+
+    private func chooseWorkingDirectory() {
+        let panel = NSOpenPanel()
+        panel.title = "选择 Herdr 工作目录"
+        panel.prompt = "在此目录打开"
+        panel.canChooseFiles = false
+        panel.canChooseDirectories = true
+        panel.allowsMultipleSelection = false
+        if let currentDirectory = session.connection.workingDirectory ?? session.currentDirectory {
+            panel.directoryURL = URL(fileURLWithPath: currentDirectory, isDirectory: true)
+        }
+        guard panel.runModal() == .OK, let directory = panel.url else { return }
+        session.openWorkingDirectory(directory.path)
     }
 
     private var disconnectedOverlay: some View {
