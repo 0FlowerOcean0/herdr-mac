@@ -389,7 +389,7 @@ public sealed partial class MainWindow : Window
         return trimmed.Length == 0 ? null : trimmed;
     }
 
-    private static Windows.UI.Color ParseColor(string value)
+    private static global::Windows.UI.Color ParseColor(string value)
     {
         var hex = value.TrimStart('#');
         return ColorHelper.FromArgb(
