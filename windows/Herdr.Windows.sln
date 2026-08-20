@@ -6,6 +6,8 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Herdr.Windows", "Herdr.Wind
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Herdr.Windows.Tests", "Herdr.Windows.Tests\Herdr.Windows.Tests.csproj", "{AD4D9D2B-E33B-4AD6-A3E5-5624E1D3C55D}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Herdr.Windows.TestHost", "Herdr.Windows.TestHost\Herdr.Windows.TestHost.csproj", "{4AC53B51-E6B2-4FC2-BB84-8708D7393E21}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|x64 = Debug|x64
@@ -20,5 +22,9 @@ Global
 		{AD4D9D2B-E33B-4AD6-A3E5-5624E1D3C55D}.Debug|x64.Build.0 = Debug|x64
 		{AD4D9D2B-E33B-4AD6-A3E5-5624E1D3C55D}.Release|x64.ActiveCfg = Release|x64
 		{AD4D9D2B-E33B-4AD6-A3E5-5624E1D3C55D}.Release|x64.Build.0 = Release|x64
+		{4AC53B51-E6B2-4FC2-BB84-8708D7393E21}.Debug|x64.ActiveCfg = Debug|x64
+		{4AC53B51-E6B2-4FC2-BB84-8708D7393E21}.Debug|x64.Build.0 = Debug|x64
+		{4AC53B51-E6B2-4FC2-BB84-8708D7393E21}.Release|x64.ActiveCfg = Release|x64
+		{4AC53B51-E6B2-4FC2-BB84-8708D7393E21}.Release|x64.Build.0 = Release|x64
 	EndGlobalSection
 EndGlobal

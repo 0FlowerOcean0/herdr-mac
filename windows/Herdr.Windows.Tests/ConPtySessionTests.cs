@@ -18,20 +18,25 @@ public sealed class ConPtySessionTests
     [Fact]
     public async Task CapturesOutputFromARealPseudoConsole()
     {
-        var command = Environment.GetEnvironmentVariable("COMSPEC") ?? @"C:\Windows\System32\cmd.exe";
+        var command = Environment.GetEnvironmentVariable("HERDR_CONPTY_TEST_HOST");
+        Assert.True(File.Exists(command), "HERDR_CONPTY_TEST_HOST must point to the published CI test host.");
         var output = new StringBuilder();
-        var completed = new TaskCompletionSource(TaskCreationOptions.RunContinuationsAsynchronously);
-        await using var session = ConPtySession.Start(command, ["/d"]);
+        var ready = new TaskCompletionSource(TaskCreationOptions.RunContinuationsAsynchronously);
+        var echoed = new TaskCompletionSource(TaskCreationOptions.RunContinuationsAsynchronously);
+        await using var session = ConPtySession.Start(command!);
         session.OutputReceived += value =>
         {
             output.Append(value);
-            if (output.ToString().Contains("HERDR_CONPTY_OK", StringComparison.Ordinal)) completed.TrySetResult();
+            var current = output.ToString();
+            if (current.Contains("HERDR_CONPTY_READY", StringComparison.Ordinal)) ready.TrySetResult();
+            if (current.Contains("HERDR_CONPTY_ECHO:PING", StringComparison.Ordinal)) echoed.TrySetResult();
         };
-        await session.WriteAsync("echo HERDR_CONPTY_OK\r");
 
         try
         {
-            await completed.Task.WaitAsync(TimeSpan.FromSeconds(10));
+            await ready.Task.WaitAsync(TimeSpan.FromSeconds(10));
+            await session.WriteAsync("PING\r");
+            await echoed.Task.WaitAsync(TimeSpan.FromSeconds(10));
         }
         catch (TimeoutException exception)
         {
@@ -40,7 +45,7 @@ public sealed class ConPtySessionTests
             throw new TimeoutException(diagnostics, exception);
         }
 
-        Assert.Contains("HERDR_CONPTY_OK", output.ToString());
-        await session.WriteAsync("exit\r");
+        Assert.Contains("HERDR_CONPTY_READY", output.ToString());
+        Assert.Contains("HERDR_CONPTY_ECHO:PING", output.ToString());
     }
 }
