@@ -6,6 +6,7 @@
     <RootNamespace>Herdr.Windows</RootNamespace>
     <AssemblyName>Herdr.Windows</AssemblyName>
     <ApplicationManifest>app.manifest</ApplicationManifest>
+    <ApplicationIcon>Assets\HerdrAppIcon.ico</ApplicationIcon>
     <Platforms>x64</Platforms>
     <PlatformTarget>x64</PlatformTarget>
     <RuntimeIdentifiers>win-x64</RuntimeIdentifiers>
@@ -25,6 +26,7 @@
   </ItemGroup>
 
   <ItemGroup>
+    <Content Include="Assets\HerdrAppIcon.ico" CopyToOutputDirectory="PreserveNewest" CopyToPublishDirectory="PreserveNewest" />
     <Content Include="Assets\HerdrLogoMark.svg" CopyToOutputDirectory="PreserveNewest" />
     <Content Include="..\terminal-web\dist\**\*">
       <Link>Assets\Terminal\%(RecursiveDir)%(Filename)%(Extension)</Link>

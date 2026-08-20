@@ -36,6 +36,8 @@ public sealed partial class MainWindow : Window
 
         ExtendsContentIntoTitleBar = true;
         SetTitleBar(AppTitleBar);
+        var appIconPath = Path.Combine(AppContext.BaseDirectory, "Assets", "HerdrAppIcon.ico");
+        if (File.Exists(appIconPath)) AppWindow.SetIcon(appIconPath);
         AppWindow.Resize(new SizeInt32(1280, 800));
         Closed += MainWindow_Closed;
         TerminalWebView.Loaded += TerminalWebView_Loaded;
