@@ -21,12 +21,13 @@ public sealed class ConPtySessionTests
         var command = Environment.GetEnvironmentVariable("COMSPEC") ?? @"C:\Windows\System32\cmd.exe";
         var output = new StringBuilder();
         var completed = new TaskCompletionSource(TaskCreationOptions.RunContinuationsAsynchronously);
-        await using var session = ConPtySession.Start(command, ["/d", "/c", "echo", "HERDR_CONPTY_OK"]);
+        await using var session = ConPtySession.Start(command, ["/d"]);
         session.OutputReceived += value =>
         {
             output.Append(value);
             if (output.ToString().Contains("HERDR_CONPTY_OK", StringComparison.Ordinal)) completed.TrySetResult();
         };
+        await session.WriteAsync("echo HERDR_CONPTY_OK\r\nexit\r\n");
 
         try
         {
