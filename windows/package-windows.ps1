@@ -68,5 +68,6 @@ if (Test-Path -LiteralPath $archivePath) {
 }
 Compress-Archive -Path (Join-Path $publishDirectory "*") -DestinationPath $archivePath -CompressionLevel Optimal
 $digest = (Get-FileHash -LiteralPath $archivePath -Algorithm SHA256).Hash.ToLowerInvariant()
-Set-Content -LiteralPath "$archivePath.sha256" -Value "$digest  $([System.IO.Path]::GetFileName($archivePath))" -Encoding ascii
+$checksumLine = "$digest  $([System.IO.Path]::GetFileName($archivePath))`n"
+[System.IO.File]::WriteAllText("$archivePath.sha256", $checksumLine, [System.Text.Encoding]::ASCII)
 Write-Host "Created $archivePath"
