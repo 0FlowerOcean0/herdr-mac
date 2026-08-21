@@ -4,7 +4,37 @@ import SwiftTerm
 final class HerdrProcessTerminalView: LocalProcessTerminalView {
     private var reportingRightClick = false
     private var hasReportedFirstOutput = false
+    private weak var observedWindow: NSWindow?
     var onFirstOutput: (() -> Void)?
+
+    deinit {
+        stopObservingWindow()
+    }
+
+    override func viewDidMoveToWindow() {
+        super.viewDidMoveToWindow()
+
+        guard observedWindow !== window else { return }
+        stopObservingWindow()
+        observedWindow = window
+        if let window {
+            NotificationCenter.default.addObserver(
+                self,
+                selector: #selector(windowDidBecomeKey(_:)),
+                name: NSWindow.didBecomeKeyNotification,
+                object: window
+            )
+            requestKeyboardFocus()
+        }
+    }
+
+    func requestKeyboardFocus() {
+        window?.makeFirstResponder(self)
+        DispatchQueue.main.async { [weak self] in
+            guard let self, let window = self.window else { return }
+            window.makeFirstResponder(self)
+        }
+    }
 
     func resetOutputReadiness() {
         hasReportedFirstOutput = false
@@ -30,12 +60,12 @@ final class HerdrProcessTerminalView: LocalProcessTerminalView {
     }
 
     override func mouseDown(with event: NSEvent) {
-        window?.makeFirstResponder(self)
+        requestKeyboardFocus()
         super.mouseDown(with: event)
     }
 
     override func rightMouseDown(with event: NSEvent) {
-        window?.makeFirstResponder(self)
+        requestKeyboardFocus()
         let terminal = getTerminal()
         let mouseReportingActive = allowMouseReporting && terminal.mouseMode != .off
 
@@ -139,6 +169,21 @@ final class HerdrProcessTerminalView: LocalProcessTerminalView {
         )
 
         return menu
+    }
+
+    @objc private func windowDidBecomeKey(_ notification: Notification) {
+        requestKeyboardFocus()
+    }
+
+    private func stopObservingWindow() {
+        if let observedWindow {
+            NotificationCenter.default.removeObserver(
+                self,
+                name: NSWindow.didBecomeKeyNotification,
+                object: observedWindow
+            )
+        }
+        observedWindow = nil
     }
 
     override func validateUserInterfaceItem(_ item: NSValidatedUserInterfaceItem) -> Bool {

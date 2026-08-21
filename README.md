@@ -18,7 +18,7 @@ Herdr Native Clients 是一组非官方、开源的 [Herdr](https://herdr.dev/) 
 
 | 平台 | 版本 | 系统要求 | 推荐安装 | 便携包 |
 | --- | --- | --- | --- | --- |
-| macOS | `v0.1.1` | macOS 14+、Apple Silicon | [下载 DMG](https://github.com/0FlowerOcean0/herdr-mac/releases/download/v0.1.1/Herdr-for-Mac-0.1.1-arm64.dmg) | [下载 ZIP](https://github.com/0FlowerOcean0/herdr-mac/releases/download/v0.1.1/Herdr-for-Mac-0.1.1-arm64.zip) |
+| macOS | `v0.1.2` | macOS 14+、Apple Silicon | [下载 DMG](https://github.com/0FlowerOcean0/herdr-mac/releases/download/v0.1.2/Herdr-for-Mac-0.1.2-arm64.dmg) | [下载 ZIP](https://github.com/0FlowerOcean0/herdr-mac/releases/download/v0.1.2/Herdr-for-Mac-0.1.2-arm64.zip) |
 | Windows Preview | `0.1.0-preview.2` | Windows 10 19041+ / Windows 11、x64 | [下载 Setup.exe](https://github.com/0FlowerOcean0/herdr-mac/releases/download/windows-v0.1.0-preview.2/Herdr-for-Windows-0.1.0-preview.2-x64-Setup.exe) | [下载 ZIP](https://github.com/0FlowerOcean0/herdr-mac/releases/download/windows-v0.1.0-preview.2/Herdr-for-Windows-0.1.0-preview.2-x64.zip) |
 
 [查看全部 Releases](https://github.com/0FlowerOcean0/herdr-mac/releases)
@@ -74,12 +74,12 @@ Herdr Native Clients 是一组非官方、开源的 [Herdr](https://herdr.dev/) 
    herdr --version
    ```
 
-3. 下载并打开 [Herdr-for-Mac-0.1.1-arm64.dmg](https://github.com/0FlowerOcean0/herdr-mac/releases/download/v0.1.1/Herdr-for-Mac-0.1.1-arm64.dmg)。
+3. 下载并打开 [Herdr-for-Mac-0.1.2-arm64.dmg](https://github.com/0FlowerOcean0/herdr-mac/releases/download/v0.1.2/Herdr-for-Mac-0.1.2-arm64.dmg)。
 4. 将 `Herdr.app` 拖到 DMG 中的 `Applications`，再从“应用程序”启动。
 
 当前 macOS Release 使用 ad-hoc 签名，尚未进行 Apple Developer ID 签名与公证。首次打开时，请在 Finder 中按住 Control 点击应用并选择“打开”，或前往“系统设置 → 隐私与安全性”确认打开。
 
-[下载 DMG SHA-256](https://github.com/0FlowerOcean0/herdr-mac/releases/download/v0.1.1/Herdr-for-Mac-0.1.1-arm64.dmg.sha256)
+[下载 DMG SHA-256](https://github.com/0FlowerOcean0/herdr-mac/releases/download/v0.1.2/Herdr-for-Mac-0.1.2-arm64.dmg.sha256)
 
 ### Windows Preview
 
@@ -194,7 +194,7 @@ assets/screenshots/       README 截图
 
 ## 验证状态
 
-macOS `0.1.1` 已通过 `21/21` 项测试。
+macOS `0.1.2` 已通过 `22/22` 项测试。
 
 Windows `0.1.0-preview.2` 已完成：
 

@@ -79,6 +79,27 @@ final class TerminalSessionTests: XCTestCase {
         XCTAssertEqual(connection.workingDirectory, "/private/tmp")
     }
 
+    func testTerminalCanReclaimKeyboardFocus() {
+        let terminal = HerdrProcessTerminalView(frame: NSRect(x: 0, y: 0, width: 640, height: 400))
+        let textField = NSTextField(frame: NSRect(x: 0, y: 0, width: 120, height: 24))
+        let container = NSView(frame: terminal.frame)
+        let window = NSWindow(
+            contentRect: container.frame,
+            styleMask: [.titled],
+            backing: .buffered,
+            defer: false
+        )
+        container.addSubview(terminal)
+        container.addSubview(textField)
+        window.contentView = container
+        XCTAssertTrue(window.makeFirstResponder(textField))
+
+        terminal.requestKeyboardFocus()
+        RunLoop.main.run(until: Date().addingTimeInterval(0.05))
+
+        XCTAssertTrue(window.firstResponder === terminal)
+    }
+
     func testSessionCatalogDecodesOfficialJSONShape() throws {
         let data = Data(#"{"sessions":[{"default":false,"name":"work","running":true,"session_dir":"/tmp/work","socket_path":"/tmp/work.sock"},{"default":true,"name":"default","running":false,"session_dir":"/tmp/default","socket_path":"/tmp/default.sock"}]}"#.utf8)
         let sessions = try HerdrSessionCatalog.decode(data)

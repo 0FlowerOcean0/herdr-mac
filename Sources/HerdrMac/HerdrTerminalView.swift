@@ -18,14 +18,14 @@ struct HerdrTerminalView: NSViewRepresentable {
         terminal.useBrightColors = true
         terminal.linkReporting = .implicit
         terminal.metalBufferingMode = .perFrameAggregated
-        terminal.onFirstOutput = { [weak coordinator = context.coordinator] in
-            coordinator?.markReady()
+        terminal.onFirstOutput = { [weak coordinator = context.coordinator, weak terminal] in
+            coordinator?.markReady(terminal: terminal)
         }
         context.coordinator.applyAppearance(to: terminal, session: session)
 
         DispatchQueue.main.async {
             context.coordinator.startIfNeeded(terminal: terminal, session: session)
-            terminal.window?.makeFirstResponder(terminal)
+            terminal.requestKeyboardFocus()
         }
         return terminal
     }
@@ -79,7 +79,11 @@ struct HerdrTerminalView: NSViewRepresentable {
                     } else if !session.useMetal && terminal.isUsingMetalRenderer {
                         try? terminal.setUseMetal(false)
                     }
-                    terminal.window?.makeFirstResponder(terminal)
+                    if let terminal = terminal as? HerdrProcessTerminalView {
+                        terminal.requestKeyboardFocus()
+                    } else {
+                        terminal.window?.makeFirstResponder(terminal)
+                    }
                 }
             } catch {
                 session.markLaunchFailed(error)
@@ -87,8 +91,9 @@ struct HerdrTerminalView: NSViewRepresentable {
         }
 
         @MainActor
-        func markReady() {
+        func markReady(terminal: HerdrProcessTerminalView?) {
             session?.markRunning()
+            terminal?.requestKeyboardFocus()
         }
 
         @MainActor
